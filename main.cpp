@@ -23,15 +23,19 @@ class SudokuMap
 {
 private:
     struct aslot sudokuForm[sudoku_size][sudoku_size];
-public:
-    SudokuMap();
-    void print();
-    void printNumOfList();
-    int numOfList(int row, int column);
-    void fillNumMap(const int pS[sudoku_size*sudoku_size]);
+    
     int VerifyNumber(int row, int column);
     int checkWholeNumMap();
+
+public:
+    SudokuMap();
+
+    void print();
+    void printNumOfList();
+    
+    void fillNumMap(const int pS[sudoku_size*sudoku_size]);
     int NumOfNoneResolvedSlot();
+    int numOfList(int row, int column);
     int sudokuChecker();
     void captureNumMap(int pNm[sudoku_size*sudoku_size]);
     void restoreNumMap(int pNm[sudoku_size*sudoku_size]);
