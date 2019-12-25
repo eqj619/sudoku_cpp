@@ -7,6 +7,11 @@
 //
 
 #include <iostream>
+#include <cstdio>
+#include <vector>
+#include <chrono>
+using namespace std;
+
 
 const int sudoku_size = 9;
 
@@ -112,7 +117,7 @@ void SudokuMap::fillNumMap(const int pS[])
 int SudokuMap::VerifyNumber(int row, int column)
 {
     int cnt;
-        
+    
     // it's alreay fixed number
     if(sudokuForm[row][column].fixed != 0 ){
         return(sudokuForm[row][column].fixed);
@@ -348,6 +353,61 @@ int main(int argc, const char * argv[])
         0,9,0,0,0,4,8,6,2
     };
     
+    const int test03[] = {
+        0,0,5,4,0,1,6,0,0,
+        0,0,0,0,6,0,0,0,0,
+        0,9,4,0,0,7,0,2,0,
+        
+        3,7,0,0,2,0,0,4,0,
+        0,0,0,0,1,0,0,0,0,
+        0,1,0,0,4,0,0,5,6,
+        
+        0,5,0,8,0,0,2,6,0,
+        0,0,0,0,9,0,0,0,0,
+        0,0,2,3,0,6,9,0,0
+    };
+    
+    const int test04[] = {
+        5,0,4,0,0,0,0,0,1,
+        0,0,6,4,0,0,0,7,0,
+        0,0,0,6,0,8,0,0,0,
+        
+        0,0,0,0,5,0,0,1,3,
+        0,0,0,0,0,0,0,0,0,
+        8,3,0,0,2,0,0,0,0,
+        
+        0,0,0,9,0,4,0,0,0,
+        0,4,0,0,0,7,6,0,0,
+        2,0,0,0,0,0,8,0,9
+    };
+    
+    const int test05[] = {
+        0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,5,0,4,
+        1,2,9,0,6,0,0,0,0,
+        
+        0,6,0,0,2,0,0,9,0,
+        5,0,0,0,0,0,0,0,0,
+        0,1,0,3,0,0,0,0,0,
+        
+        3,0,0,5,0,4,0,0,0,
+        0,0,0,7,0,0,0,0,0,
+        0,0,0,0,0,0,0,2,0
+    };
+    
+    const int test06[] = {
+        8,0,0,0,0,0,0,0,0,
+        0,0,3,6,0,0,0,0,0,
+        0,7,0,0,9,0,2,0,0,
+        
+        0,5,0,0,0,7,0,0,0,
+        0,0,0,0,4,5,7,0,0,
+        0,0,0,1,0,0,0,3,0,
+        
+        0,0,1,0,0,0,0,6,8,
+        0,0,8,5,0,0,0,1,0,
+        0,9,0,0,0,0,4,0,0
+    };
     SudokuMap map;
     
     // Sudoku Resolver
@@ -367,7 +427,10 @@ int main(int argc, const char * argv[])
             0, NULL, 0, NULL};
     struct checkPoint *pHead = NULL;
     
-    map.fillNumMap(test02);
+    chrono::system_clock::time_point  start, end;
+    start = std::chrono::system_clock::now();
+    
+    map.fillNumMap(test06);
     map.sudokuChecker();
     
     int i, loop, flag = 3;
@@ -451,5 +514,10 @@ int main(int argc, const char * argv[])
             map.SetFixedValue(pHead->slotNum/sudoku_size, pHead->slotNum%sudoku_size, 0);
         }
     } // while(loop)
+    
+    end = std::chrono::system_clock::now();
+    double elapsed = chrono::duration_cast<chrono::milliseconds>(end-start).count();
+    cout << "Spent time is " << elapsed << " usec.\n";
+    
     return 0;
 }
