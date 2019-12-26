@@ -247,10 +247,11 @@ int SudokuMap::sudokuChecker()
     while(result != -1)
     {
         result = checkWholeNumMap();
+#ifdef DEBUG_PRINT2
         printf("checkWholeTable = %d\n", result);
-        
         print();
         printNumOfList();
+#endif
         openSlot = NumOfNoneResolvedSlot();
         printf("Is complete %d\n", openSlot);
         if (openSlot == lastNum) break;
@@ -405,6 +406,7 @@ int SudokuMap::resolve_sodoku(int slotNum)
     return(-1);
 }
 
+#ifdef TWO_CANDIDATE
 //------------
 struct checkPoint
 {
@@ -439,6 +441,7 @@ struct checkPoint *addCheckPoint(struct checkPoint *pCP, int flag)
     
     return(pTmp);
 }
+#endif
 
 // ----------
 
@@ -541,11 +544,28 @@ int main(int argc, const char * argv[])
         0,0,0,0,2,0,0,0,0
     };
 
-    
     SudokuMap map;
     
     // Sudoku Resolver
     int result;
+
+    chrono::system_clock::time_point  start, end;
+    start = std::chrono::system_clock::now();
+    
+    map.fillNumMap(test08);
+    map.print();
+    map.printNumOfList();
+    
+#ifdef RECURSIVE_CALL
+    if (map.resolve_sodoku(0) == 0){
+        printf("SUCCEED\n");
+    }
+    else{
+        printf("Failed\n");
+    }
+#endif
+    
+#ifdef TWO_CANDIDATE
     struct checkPoint topCP =
         {NULL, -1,
         {    0,0,0,0,0,0,0,0,0,
@@ -560,23 +580,6 @@ int main(int argc, const char * argv[])
          },
             0, NULL, 0, NULL};
     
-    chrono::system_clock::time_point  start, end;
-    start = std::chrono::system_clock::now();
-    
-    map.fillNumMap(test08);
-
-#ifdef RECURSIVE_CALL
-    if (map.resolve_sodoku(0) == 0){
-        printf("SUCCEED\n)");
-        map.print();
-        map.printNumOfList();
-    }
-    else{
-        printf("Failed\n)");
-    }
-#endif
-    
-#ifdef TWO_CANDIDATE
     struct checkPoint *pHead = NULL;
     int i, loop, flag = 3;
     
@@ -661,6 +664,9 @@ int main(int argc, const char * argv[])
         }
     } // while(loop)
 #endif
+    
+    map.print();
+    
     end = std::chrono::system_clock::now();
     double elapsed = chrono::duration_cast<chrono::milliseconds>(end-start).count();
     cout << "Spent time is " << elapsed << " usec.\n";
