@@ -506,11 +506,24 @@ int main(int argc, const char * argv[])
         0,0,0,0,6,0,0,0,0,
         0,0,0,0,2,0,0,0,0
     };
+    const int test09[] = {
+        0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,2,8,0,
+        3,7,6,4,0,0,0,0,0,
+        
+        7,0,0,0,0,1,0,0,0,
+        0,2,0,0,0,0,0,0,0,
+        4,0,0,3,0,0,0,0,6,
+        
+        0,1,0,0,2,8,0,0,0,
+        0,0,0,0,0,5,0,0,0,
+        0,0,0,0,0,0,0,0,3
+    };
 
     SudokuMap map;
     
     // Sudoku Resolver
-    map.fillNumMap(test05);
+    map.fillNumMap(test09);
     map.print();
     
     chrono::system_clock::time_point  start, end;
