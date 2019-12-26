@@ -19,11 +19,9 @@ const int sudoku_size = 9;
 struct aslot
 {
     int fixed;      // 0 ... not find yet.
-    int try1;
-    int try2;
     int numList[sudoku_size]; // candidate numbers
 };
-const struct aslot aslotInit = {0, 0, 0, {1,2,3,4,5,6,7,8,9}};
+const struct aslot aslotInit = {0, {1,2,3,4,5,6,7,8,9}};
 
 class SudokuMap
 {
@@ -75,26 +73,13 @@ void SudokuMap::print()
 int SudokuMap::numOfList(int row, int column)
 {
     int cnt = 0;
-    int t[2] = {0,0};
     
     if(sudokuForm[row][column].fixed != 0) return (0);
     
     for(int i=0; i<sudoku_size; i++){
         if(sudokuForm[row][column].numList[i] != 0){
             cnt++;
-            if(cnt==1){
-                t[0] = sudokuForm[row][column].numList[i];
-            };
-            if(cnt==2) {
-                t[1] = sudokuForm[row][column].numList[i];
-            };
         }
-    }
-    
-    if(cnt == 2)
-    {
-        sudokuForm[row][column].try1 = t[0];
-        sudokuForm[row][column].try2 = t[1];
     }
     return(cnt);
 }
