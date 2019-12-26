@@ -6,7 +6,6 @@
 //  Copyright © 2019 Eiji Oga. All rights reserved.
 //
 //#define DEBUG_PRINT1
-//#define TWO_CANDIDATE
 #define RECURSIVE_CALL
 
 #include <iostream>
@@ -14,7 +13,6 @@
 #include <vector>
 #include <chrono>
 using namespace std;
-
 
 const int sudoku_size = 9;
 
@@ -47,10 +45,10 @@ public:
     int sudokuChecker();
     void captureNumMap(int pNm[sudoku_size*sudoku_size]);
     void restoreNumMap(int pNm[sudoku_size*sudoku_size]);
-    int getTrialNumber(int flag, int row, int column);
     void SetFixedValue(int row, int column, int TrialNum);
     
     int resolve_sodoku(int slotNum);
+    int getNextSlotNum(int no);
 };
 
 SudokuMap::SudokuMap()
@@ -294,16 +292,6 @@ void SudokuMap::restoreNumMap(int pNm[sudoku_size*sudoku_size])
         }
     }
 }
-int SudokuMap::getTrialNumber(int flag, int row, int column)
-{
-    if(flag == 1){
-        return(sudokuForm[row][column].try1);
-    }
-    if(flag == 2){
-        return(sudokuForm[row][column].try2);
-    }
-    return(-1); // error
-}
 
 void SudokuMap::SetFixedValue(int row, int column, int TrialNum)
 {
@@ -336,16 +324,7 @@ int SudokuMap::resolve_sodoku(int slotNum)
         initialCall = true;
     }
     // find next unresolved slot
-    sN = slotNum;
-    for (int i=sN; i<sudoku_size*sudoku_size; i++)
-    {
-        if(sudokuForm[i/sudoku_size][i%sudoku_size].fixed == 0)
-        {
-            sN = i;
-            printf("find unresolved slotNum %d(%d:%d)\n", sN, sN/sudoku_size, sN%sudoku_size);
-            break;
-        }
-    }
+    sN = getNextSlotNum(slotNum);
     
     // capture a list of possible numbers
     int possibleList[sudoku_size] = {0,0,0,0,0,0,0,0,0};
@@ -389,7 +368,7 @@ int SudokuMap::resolve_sodoku(int slotNum)
             
             if (sN < sudoku_size*sudoku_size)
             {
-                ret = resolve_sodoku(sN+1);
+                ret = resolve_sodoku(getNextSlotNum(sN));
             }
             else{
                 printf("reach slot number > 81\n");
@@ -404,46 +383,28 @@ int SudokuMap::resolve_sodoku(int slotNum)
     }
     
     // Unresolved if un-resolved instead of try all candidates
-    printf("Unresolved slot %d - Rollback\n",sN, result);
+    printf("Unresolved slot %d - Rollback\n",sN);
     return(-1);
 }
 
-#ifdef TWO_CANDIDATE
-//------------
-struct checkPoint
+int SudokuMap::getNextSlotNum(int slotNo)
 {
-    struct checkPoint   *pPrev;     // Null = head
-    int                 slotNum;    // 0 to 80
-    int                 capMap[sudoku_size*sudoku_size];
-    int                 try1;       // 0 is fail
-    struct checkPoint   *pNextTry1; // next pointer
-    int                 try2;
-    struct checkPoint   *pNextTry2;
-};
-
-struct checkPoint *addCheckPoint(struct checkPoint *pCP, int flag)
-{
-    struct checkPoint *pTmp;
+    int min = sudoku_size;
+    int minSlotNo = slotNo;
     
-    pTmp = (checkPoint*)malloc(sizeof(struct checkPoint));
-
-    if (flag == 1){
-        pCP->pNextTry1 = pTmp;
+    for(int i=0; i<sudoku_size*sudoku_size; i++)
+    {
+         if(sudokuForm[i/sudoku_size][i%sudoku_size].fixed == 0)
+         {
+             if (min > numOfList(i/sudoku_size, i%sudoku_size))
+             {
+                 min = numOfList(i/sudoku_size, i%sudoku_size);
+                 minSlotNo = i;
+             }
+         }
     }
-    if (flag == 2){
-        pCP->pNextTry2 = pTmp;
-    }
-    
-    pTmp->pPrev = pCP;
-    pTmp->slotNum = -1;
-    pTmp->try1 = 0;
-    pTmp->pNextTry1 = NULL;
-    pTmp->try2 = 0;
-    pTmp->pNextTry2 = NULL;
-    
-    return(pTmp);
+    return(minSlotNo);
 }
-#endif
 
 // ----------
 
@@ -549,130 +510,24 @@ int main(int argc, const char * argv[])
     SudokuMap map;
     
     // Sudoku Resolver
-    int result;
-
+    map.fillNumMap(test05);
+    map.print();
+    
     chrono::system_clock::time_point  start, end;
     start = std::chrono::system_clock::now();
     
-    map.fillNumMap(test08);
-    map.print();
-    
-#ifdef RECURSIVE_CALL
     if (map.resolve_sodoku(0) == 0){
         printf("SUCCEED\n");
     }
     else{
         printf("Failed\n");
     }
-#endif
-    
-#ifdef TWO_CANDIDATE
-    struct checkPoint topCP =
-        {NULL, -1,
-        {    0,0,0,0,0,0,0,0,0,
-             0,0,0,0,0,0,0,0,0,
-             0,0,0,0,0,0,0,0,0,
-             0,0,0,0,0,0,0,0,0,
-             0,0,0,0,0,0,0,0,0,
-             0,0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,
-         },
-            0, NULL, 0, NULL};
-    
-    struct checkPoint *pHead = NULL;
-    int i, loop, flag = 3;
-    
-    map.sudokuChecker();
-    map.printNumOfList();
-    
-    if(topCP.slotNum == -1){        // initial loop
-        pHead = &topCP;
-    }
-    map.captureNumMap(pHead->capMap);
-
-    loop = 0;
-    while(map.NumOfNoneResolvedSlot() != 0)
-    {
-        loop++;
-        printf("===== LOOP %d ============================\n", loop);
         
-        // find 2 candidates slot if checkPoint is new.
-        // then, capture the number's map before try
-        if(pHead->try1 == 0 && pHead->try2 == 0)
-        {
-            map.captureNumMap(pHead->capMap);
-            for (i=0; i < (sudoku_size*sudoku_size); i++){
-                if ( map.numOfList(i/sudoku_size, i%sudoku_size) == 2)
-                {
-                    pHead->slotNum = i;
-                    pHead->try1 = map.getTrialNumber(1, i/sudoku_size, i%sudoku_size);
-                    pHead->try2 = map.getTrialNumber(2, i/sudoku_size, i%sudoku_size);
-                    break;
-                }
-            }
-        }
-        printf("pHead pPrev 0x%08x, slotNum %d(%d-%d), try1 %d, 0x%08x, try2 %d, try2 ptr 0x%08x\n",
-               pHead->pPrev, pHead->slotNum, pHead->slotNum/9,pHead->slotNum%9, pHead->try1, pHead->pNextTry1, pHead->try2, pHead->pNextTry2 );
-        
-        // Before try to fill-in number re-store captured numbers
-        // to verify Sudoku form using refresh candidate lists
-        map.restoreNumMap(pHead->capMap);
-        
-        // Try candidate
-        if (pHead->try1 > 0 && pHead->pNextTry1 == NULL){
-            map.SetFixedValue(pHead->slotNum/sudoku_size, pHead->slotNum%sudoku_size, pHead->try1);
-            pHead->try1 = -1;       // marked for checked candidate.
-            flag = 1;
-        }
-        else if (pHead->try2 > 0 && pHead->pNextTry2 == NULL){
-            map.SetFixedValue(pHead->slotNum/sudoku_size, pHead->slotNum%sudoku_size, pHead->try2);
-            pHead->try2 = -1;      // marked for checked candidate.
-            flag = 2;
-        }
-        else if (pHead->try1 == -1 && pHead->try2 == -1){
-            void *pTmp;
-            
-            // roll back previous check point
-            printf("BOTH Trial number are failed... Rollback to previous candidate\n");
-            map.SetFixedValue(pHead->slotNum/sudoku_size, pHead->slotNum%sudoku_size, 0);
-            
-            pTmp = (void*) pHead;
-            pHead = pHead->pPrev;
-            free(pTmp);
-            
-            continue;
-        }
-        
-        // Check Sudoku Numbers
-        result = map.sudokuChecker();
-        
-        if (result >= 1)
-        {
-            struct checkPoint *pTmp;
-            // if result is good. add next slot, link then move a head pointer
-            pTmp = addCheckPoint(pHead, flag);
-            
-            if (pTmp != 0) pHead = pTmp;
-            else{
-                printf("Error %d\n", __LINE__);
-                return(-1);
-            }
-        }
-        else if (result == -1)
-        {
-            printf("sudokuChecker FAILED flag = %d\n", flag);
-            map.SetFixedValue(pHead->slotNum/sudoku_size, pHead->slotNum%sudoku_size, 0);
-        }
-    } // while(loop)
-#endif
-    
-    map.print();
-    
     end = std::chrono::system_clock::now();
     double elapsed = chrono::duration_cast<chrono::milliseconds>(end-start).count();
     cout << "Spent time is " << elapsed << " usec.\n";
     
+    map.print();
+
     return 0;
 }
