@@ -288,16 +288,15 @@ void SudokuMap::SetFixedValue(int row, int column, int TrialNum)
 //      -1 ... Unresolved
 //      0 ... Resolved
 //      1-81 .. remained unresolved slot
-int SudokuMap::resolve_sodoku(int slotNum)
+int SudokuMap::resolve_sodoku(int sN)
 {
     static bool initialCall = false;
     static int fLoop = 0;
     int result = 0;
-    int sN = 0;
     
     printf("%s loop %d for slot %d(%d:%d)\n",
-            __FUNCTION__, fLoop++, slotNum,
-           slotNum/sudoku_size, slotNum%sudoku_size);
+            __FUNCTION__, fLoop++, sN,
+           sN/sudoku_size, sN%sudoku_size);
     
     if (initialCall == false)
     {
@@ -309,7 +308,7 @@ int SudokuMap::resolve_sodoku(int slotNum)
         initialCall = true;
     }
     // find next unresolved slot
-    sN = getNextSlotNum(slotNum);
+    sN = getNextSlotNum(sN);
     
     // capture a list of possible numbers
     int possibleList[sudoku_size] = {0,0,0,0,0,0,0,0,0};
