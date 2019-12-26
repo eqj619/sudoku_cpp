@@ -253,7 +253,7 @@ int SudokuMap::sudokuChecker()
         printNumOfList();
 #endif
         openSlot = NumOfNoneResolvedSlot();
-        printf("Is complete %d\n", openSlot);
+        //printf("Is complete %d\n", openSlot);
         if (openSlot == lastNum) break;
         else lastNum = openSlot;
     }
@@ -330,6 +330,8 @@ int SudokuMap::resolve_sodoku(int slotNum)
     {
         result = sudokuChecker();
         printf("initial sudokuChecker %d\n", result);
+        printNumOfList();
+        
         if (result == 0) return(0);
         initialCall = true;
     }
@@ -395,14 +397,14 @@ int SudokuMap::resolve_sodoku(int slotNum)
             }
             if (ret == 0) return(0);
             if (ret == -1) {
-                printf("Return from nesting resolve_sudoku call i=%d\n",i);
+                // printf("Return from nesting resolve_sudoku call i=%d\n",i);
                 continue;
             }
         }
     }
     
     // Unresolved if un-resolved instead of try all candidates
-    printf("Unresolved slot %d at sudokuChecker %d\n",sN, result);
+    printf("Unresolved slot %d - Rollback\n",sN, result);
     return(-1);
 }
 
@@ -554,7 +556,6 @@ int main(int argc, const char * argv[])
     
     map.fillNumMap(test08);
     map.print();
-    map.printNumOfList();
     
 #ifdef RECURSIVE_CALL
     if (map.resolve_sodoku(0) == 0){
@@ -584,6 +585,8 @@ int main(int argc, const char * argv[])
     int i, loop, flag = 3;
     
     map.sudokuChecker();
+    map.printNumOfList();
+    
     if(topCP.slotNum == -1){        // initial loop
         pHead = &topCP;
     }
